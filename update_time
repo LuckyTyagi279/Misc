@@ -1,0 +1,101 @@
+#!/bin/sh
+#
+#	Script to update System Clock from User
+#	Then update Hardware Clock from System Clock
+#
+
+Argument=$1
+Cron_Bin="crond"
+
+# YYYYMMDDHHMM.SS -> YEAR_MONTH_DAY_HOUR_MINUTE.SECONDS
+Expected_num_of_digits=15
+
+# Check if the passed argument is a Number
+check_if_numeric()
+{
+	Num1=$(echo $1 | awk -F'.' '{print $1}')
+	Num2=$(echo $1 | awk -F'.' '{print $2}')
+	
+	expr Num1 / 1 > /dev/null 
+
+	if [ $? -ne 0 ];
+	then
+		echo "ERROR! Invalid Argument."
+		exit 1
+	fi
+
+	expr Num2 / 1 > /dev/null 
+
+	Var=$?
+	if [ ${Var} -ne 0 ] && [ ${Var} -ne 1 ];then
+		echo "ERROR! Invalid Argument."
+		exit 1
+	fi
+}
+
+# Check if the Number has expected amount of digits in it
+check_num_of_digits()
+{
+	Received_num_of_digits=$(expr  $(echo $1 | wc -c) - 1)
+
+	if [ ${Received_num_of_digits} -ne ${Expected_num_of_digits} ];
+	then
+		echo "ERROR! Invalid date format."
+		exit 1
+	fi
+}
+
+# Update System Clock and Hardware Clock
+update_time()
+{
+	Time_to_Set=$1
+
+	#Process_ID=$(ps | grep /usr/sbin/crond | awk '{print $1}' | head -n1)
+
+	# KILL CROND
+	killall -9 ${Cron_Bin}
+
+	# Update_System_Time
+	date -s ${Time_to_Set} > /dev/null
+
+	if [ $? -ne 0 ];
+	then
+		echo "ERROR! Unable to set system clock."
+		# If failure, restart Crond
+		/usr/sbin/crond
+		exit 1
+	fi
+
+	# Update Hardware Clock
+	hwclock -w
+
+	if [ $? -ne 0 ];
+	then
+		echo "ERROR! Unable to set hardware clock."
+		# If failure, restart Crond
+		/usr/sbin/crond
+		exit 1
+	fi
+
+	# Restart Crond
+	/usr/sbin/crond
+	exit 0
+}
+
+
+#-----------------------#
+# EXECUTION STARTS HERE #
+#-----------------------#
+
+if [ $# -ne 1 ];
+then
+        echo "ERROR! No argument passed."
+	        exit 1
+fi
+
+
+check_if_numeric ${Argument}
+
+check_num_of_digits ${Argument}
+
+update_time ${Argument}
