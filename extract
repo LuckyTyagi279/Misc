@@ -1,0 +1,41 @@
+#!/bin/bash
+#
+#
+
+function usage()
+{
+	echo "*** Command Usage ***"
+	echo "* extract gz"
+	echo "* extract bz2"
+	echo "* extract xz"
+	echo "* extract zip"
+	echo
+exit 1
+}
+
+FILE_TYPE=${1}
+
+case ${FILE_TYPE} in
+	gz )
+		echo	;	echo " tar -xzvf <name.tar.gz>"	;	echo
+	;;
+
+	bz2 )
+		echo	;	echo " tar -xjvf <name.tar.bz2>"	;	echo
+	;;
+
+	xz )
+		echo	;	echo " tar -xJvf <name.tar.xz>"	;	echo
+	;;
+
+	zip )
+		echo	;	echo "zip -r Name.zip <list of directories>"	;	echo
+		echo "unzip Name.zip -d <Dir to extract into>"	;	echo
+	;;
+
+	* )
+		echo	;	echo " * Invalid Argument * "	;	usage
+	;;
+esac
+
+exit 0
