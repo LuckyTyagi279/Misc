@@ -1,0 +1,14 @@
+#!/bin/sh
+#
+#	Script to KILL CPU consuming
+#	Tracker* background processes
+#
+
+Extract_PID=$(ps -aux | grep "tracker-extract" | awk '{print $2}')
+Miner_Apps_PID=$(ps -aux | grep "tracker-miner-apps" | awk '{print $2}')
+Miner_fs_PID=$(ps -aux | grep "tracker-miner-fs" | awk '{print $2}')
+Miner_User_Guides_PID=$(ps -aux | grep "tracker-miner-user-guides" | awk '{print $2}')
+Store_PID=$(ps -aux | grep "tracker-store" | awk '{print $2}')
+
+
+sudo kill -9 ${Extract_PID} ${Miner_Apps_PID} ${Miner_fs_PID} ${Miner_User_Guides_PID} ${Store_PID}
