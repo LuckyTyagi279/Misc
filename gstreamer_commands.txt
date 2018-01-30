@@ -1,0 +1,61 @@
+**************
+** 1280x720 **
+**************
+
+------------------------------------------
+	SINGLE CAMERA
+------------------------------------------
+** Send From iMX6 **
+	 
+gst-launch-1.0 imxv4l2src device=/dev/video2 !  'video/x-raw, format=I420, width=1280, height=720, framerate=15/1' ! vpuenc ! 'video/x-h264' ! rtph264pay pt=96 ! udpsink host=$CLIENT_IP port=5000
+
+** Recieve in iMX6 **
+gst-launch-1.0 udpsrc port=5000  ! "application/x-rtp, clock-rate=90000, encoding-name=H264"  ! rtph264depay ! avdec_h264 ! imxv4l2sink sync=false
+
+
+** Send From iMX6 **
+gst-launch-1.0 imxv4l2src device=/dev/video2 ! 'video/x-raw, format=I420, width=1280, height=720, framerate=30/1' ! vpuenc ! 'video/x-h264' ! rtph264pay pt=96 ! udpsink host=$CLIENT_IP port=5000
+
+** Recieve in Dev PC **
+gst-launch-1.0 udpsrc port=5000  ! "application/x-rtp, clock-rate=90000, encoding-name=H264"  ! rtph264depay ! avdec_h264 ! xvimagesink sync=false
+------------------------------------------
+------------------------------------------
+
+NOTE : Follow the document "ANKAA_WiFi_streaming_user_manual" for ANKAA Access Point Streaming.
+
+------------------------------------------
+	TWO CAMERAS
+------------------------------------------
+** SEND From iMX6 **
+
+	** Normal UDP **  -> Works For ANDROID APP Streaming 
+  ** Video0 **
+gst-launch-1.0 imxv4l2src device=/dev/video0 ! 'video/x-raw, format=I420, width=1280, height=720, framerate=30/1' ! vpuenc ! 'video/x-h264' ! rtph264pay pt=96 ! udpsink host=$CLIENT_IP port=5000 &
+
+  ** Video2 **
+gst-launch-1.0 imxv4l2src device=/dev/video2 ! 'video/x-raw, format=I420, width=1280, height=720, framerate=30/1' ! vpuenc ! 'video/x-h264' ! rtph264pay pt=96 ! udpsink host=$CLIENT_IP port=5001 &
+
+	** UDP + RTP **  -> Works For ANDROID APP Streaming
+  ** Video0 **
+gst-launch-1.0 -v rtpbin name=rtpbin imxv4l2src device=/dev/video0 ! videoconvert ! video/x-raw, format=I420, width=1280, height=720, framerate=30/1 ! vpuenc ! video/x-h264 ! rtph264pay pt=96 ! rtpbin.send_rtp_sink_0  rtpbin.send_rtp_src_0 ! udpsink host=$CLIENT_IP port=5000 rtpbin.send_rtcp_src_0 ! udpsink host=$CLIENT_IP port=5001 sync=false async=false udpsrc port=5005 ! rtpbin.recv_rtcp_sink_0 
+
+  ** Video2 **
+gst-launch-1.0 -v rtpbin name=rtpbin imxv4l2src device=/dev/video2 ! videoconvert ! video/x-raw, format=I420, width=1280, height=720, framerate=30/1 ! vpuenc ! video/x-h264 ! rtph264pay pt=96 ! rtpbin.send_rtp_sink_0  rtpbin.send_rtp_src_0 ! udpsink host=$CLIENT_IP port=5002 rtpbin.send_rtcp_src_0 ! udpsink host=$CLIENT_IP port=5003 sync=false async=false udpsrc port=5006 ! rtpbin.recv_rtcp_sink_0 
+
+
+** RECEIVE In Dev Sys **
+	** Normal Stream **
+  ** Video0 **
+gst-launch-1.0 udpsrc port=5000  ! "application/x-rtp, clock-rate=90000, encoding-name=H264"  ! rtph264depay ! avdec_h264 ! xvimagesink sync=false &
+  
+  ** Video2 **
+gst-launch-1.0 udpsrc port=5001  ! "application/x-rtp, clock-rate=90000, encoding-name=H264"  ! rtph264depay ! avdec_h264 ! xvimagesink sync=false &
+
+	** Show FPS In Dev Sys **
+  ** Video0 **
+gst-launch-1.0 udpsrc port=5000  ! "application/x-rtp, clock-rate=90000, encoding-name=H264"  ! rtph264depay ! avdec_h264 ! fpsdisplaysink &
+  
+  ** Video2 **
+gst-launch-1.0 udpsrc port=5001  ! "application/x-rtp, clock-rate=90000, encoding-name=H264"  ! rtph264depay ! avdec_h264 ! fpsdisplaysink &
+------------------------------------------
+------------------------------------------
