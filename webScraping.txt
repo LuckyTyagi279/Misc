@@ -1,0 +1,8 @@
+PYTHON
+*   Modules used "BeautifulSoup" "Urllib2"
+    Urllib2 : Used for fetching URLs. Defines functions and classes to help with URL actions.
+    BeautifulSoup : Tool for pulling out info from a webpage. Extract tables, lists, paragraph and put filters.
+		    It doesn't fetch the webpage, that's why Urllib2 is used.
+
+Web Scraping for Events :   http://opencivicdata.readthedocs.io/en/latest/scrape/events.html
+Web Scraping for Jobs	:   
